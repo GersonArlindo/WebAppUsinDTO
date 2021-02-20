@@ -28,7 +28,9 @@ namespace MiPrimerAppWeb.Controllers
         // GET: Students
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Students.ToListAsync());
+            var data= await _context.Students.ToListAsync();
+            var listStudents = data.Select(x => mapper.Map<StudentDTO>(x)).ToList();
+            return View(listStudents);
         }
 
         // GET: Students/Details/5
