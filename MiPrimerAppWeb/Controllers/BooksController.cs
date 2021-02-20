@@ -26,7 +26,9 @@ namespace MiPrimerAppWeb.Controllers
         // GET: Books
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Books.ToListAsync());
+            var data = await _context.Books.ToListAsync();
+            var listBooks = data.Select(x => mapper.Map<BookDTO>(x)).ToList();
+            return View(listBooks);
         }
 
         // GET: Books/Details/5
