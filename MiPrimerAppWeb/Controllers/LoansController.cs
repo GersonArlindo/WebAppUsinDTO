@@ -2,28 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MiPrimerAppWeb.Data;
 using MiPrimerAppWeb.Data.Entities;
+using MiPrimerAppWeb.DTOs;
 
 namespace MiPrimerAppWeb.Controllers
 {
     public class LoansController : Controller
     {
         private readonly SchoolContext _context;
+        private readonly IMapper mapper;
 
-        public LoansController(SchoolContext context)
+        public LoansController(SchoolContext context, IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
         }
 
         // GET: Loans
         public async Task<IActionResult> Index()
         {
-            var schoolContext = _context.Loans.Include(l => l.Book).Include(l => l.Student);
-            return View(await schoolContext.ToListAsync());
+
+            
+            var data = await _context.Loans.Include(l => l.Book).Include(l => l.Student).ToListAsync();
+            var list = data.Select(x => mapper.Map<LoanDTO>(x)).ToList();
+            return View(list);
+            //var schoolContext = _context.Loans.Include(l => l.Book).Include(l => l.Student);
+            //return View(await schoolContext.ToListAsync());
         }
 
         // GET: Loans/Details/5
@@ -42,8 +51,8 @@ namespace MiPrimerAppWeb.Controllers
             {
                 return NotFound();
             }
-
-            return View(loan);
+            var loanDTO = mapper.Map<LoanDTO>(loan);
+            return View(loanDTO);
         }
 
         // GET: Loans/Create
@@ -59,17 +68,18 @@ namespace MiPrimerAppWeb.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("LoanID,BookID,StudentID,DateLoan")] Loan loan)
+        public async Task<IActionResult> Create([Bind("LoanID,BookID,StudentID,DateLoan")] LoanDTO loanDTO)
         {
             if (ModelState.IsValid)
             {
+                var loan = mapper.Map<Loan>(loanDTO);
                 _context.Add(loan);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BookID"] = new SelectList(_context.Books, "BookID", "BookID", loan.BookID);
-            ViewData["StudentID"] = new SelectList(_context.Students, "StudentID", "StudentID", loan.StudentID);
-            return View(loan);
+            ViewData["BookID"] = new SelectList(_context.Books, "BookID", "BookID", loanDTO.BookID);
+            ViewData["StudentID"] = new SelectList(_context.Students, "StudentID", "StudentID", loanDTO.StudentID);
+            return View(loanDTO);
         }
 
         // GET: Loans/Edit/5
@@ -87,7 +97,8 @@ namespace MiPrimerAppWeb.Controllers
             }
             ViewData["BookID"] = new SelectList(_context.Books, "BookID", "BookID", loan.BookID);
             ViewData["StudentID"] = new SelectList(_context.Students, "StudentID", "StudentID", loan.StudentID);
-            return View(loan);
+            var loanDTO = mapper.Map<LoanDTO>(loan);
+            return View(loanDTO);
         }
 
         // POST: Loans/Edit/5
@@ -95,9 +106,9 @@ namespace MiPrimerAppWeb.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("LoanID,BookID,StudentID,DateLoan")] Loan loan)
+        public async Task<IActionResult> Edit(int id, [Bind("LoanID,BookID,StudentID,DateLoan")] LoanDTO loanDTO)
         {
-            if (id != loan.LoanID)
+            if (id != loanDTO.LoanID)
             {
                 return NotFound();
             }
@@ -106,12 +117,13 @@ namespace MiPrimerAppWeb.Controllers
             {
                 try
                 {
+                    var loan = mapper.Map<Loan>(loanDTO);
                     _context.Update(loan);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!LoanExists(loan.LoanID))
+                    if (!LoanExists(loanDTO.LoanID))
                     {
                         return NotFound();
                     }
@@ -122,9 +134,9 @@ namespace MiPrimerAppWeb.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BookID"] = new SelectList(_context.Books, "BookID", "BookID", loan.BookID);
-            ViewData["StudentID"] = new SelectList(_context.Students, "StudentID", "StudentID", loan.StudentID);
-            return View(loan);
+            ViewData["BookID"] = new SelectList(_context.Books, "BookID", "BookID", loanDTO.BookID);
+            ViewData["StudentID"] = new SelectList(_context.Students, "StudentID", "StudentID", loanDTO.StudentID);
+            return View(loanDTO);
         }
 
         // GET: Loans/Delete/5

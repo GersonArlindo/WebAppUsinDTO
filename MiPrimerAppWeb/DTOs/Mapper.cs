@@ -16,7 +16,8 @@ namespace MiPrimerAppWeb.DTOs
             CreateMap<Student, StudentDTO>();
             CreateMap<BookDTO, Book>();
             CreateMap<Book, BookDTO>();
-
+            CreateMap<LoanDTO, Loan>();
+            CreateMap<Loan, LoanDTO>();
         }
     }
 }
